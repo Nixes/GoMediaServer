@@ -1,0 +1,12 @@
+{{template "header"}}
+        <div class="ui segment">
+          <div class="ui fluid vertical menu">
+            <a class="item icon" href="../">up<i class="level up icon"></i></a>
+          {{range .}}
+            {{if .IsDir}}<a class="item icon" href="{{.Name}}/">{{.Name}}<i class="folder icon"></i></a>{{end}}
+            {{if not .IsDir}}<a class="item icon" href="{{.Name}}">{{.Name}}<i class="file icon"></i></a>{{end}}
+          {{end}}
+        </div>
+      </div>
+  </div>
+{{template "footer"}}

@@ -1,0 +1,38 @@
+{{define "header"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+		<title>Go Media Server</title>
+		<meta http-equiv="Content-Type" content="text/html" charset="utf-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script src="/static/jquery-2.2.0.min.js"></script>
+		<script src="/static/semantic.min.js"></script>
+		<link rel="stylesheet" type="text/css" href="/static/semantic.min.css" />
+    <style>
+			#container {
+				padding:10px;
+				background: #F1F1F1;
+				max-width: 600px;
+				margin: 0 auto;
+			}
+    </style>
+    <script type="text/javascript">
+
+    </script>
+</head>
+<body>
+  <div id="container">
+    <div class="ui container">
+      </div>
+        <h1>Go Media Server</h1>
+        <div class="ui menu inverted blue">
+          <a class="active item" href="/">Home</a>
+          <a class="item" href="/files/">Browse</a>
+          <a class="item" href="/images">Images</a>
+          <a class="item" href="/music">Music</a>
+          <a class="item" href="/video">Video</a>
+					<div class="right menu">
+						<a class="item" href="/settings"><i class="setting large icon"></i></a>
+					</div>
+        </div>
+{{end}}
