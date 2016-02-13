@@ -12,6 +12,7 @@ import (
 
 type Settings struct {
     FileFolder string
+    ImageFolder string
     VideoFolder string
     MusicFolder string
 }
@@ -21,26 +22,30 @@ type Page struct {
     CurrentSection string // store name of the currently activated section of the website
 }
 
+func SaveConfig (settings Settings) {
+  content,err :=json.Marshal(&settings)
+  if err!=nil{
+      fmt.Print("Error:",err)
+  } else {
+    err = ioutil.WriteFile("config.json",content,0666)
+    if err!=nil{
+        fmt.Print("Error:",err)
+    }
+  }
+}
+
 func LoadConfig () Settings {
+  var settings Settings = Settings{ FileFolder:"./",ImageFolder:"./",VideoFolder:"./",MusicFolder:"./" }
   content, err := ioutil.ReadFile("config.json")
   if err!=nil{
       fmt.Print("Error:",err)
-      var TempConfig Settings = Settings{ FileFolder:"./",VideoFolder:"./",MusicFolder:"./" }
-      content,err :=json.Marshal(&TempConfig)
-      if err!=nil{
-          fmt.Print("Error:",err)
-          fmt.Print("Failed to serialise config file")
-      }
-      err = ioutil.WriteFile("config.json",content,0666)
-      if err!=nil{
-          fmt.Print("Error:",err)
-          fmt.Print("Failed to write config file")
-      }
-  }
-  var settings Settings
-  err=json.Unmarshal(content, &settings)
-  if err!=nil{
-      fmt.Print("Error:",err)
+      fmt.Print("\nSo a new one is being created")
+      SaveConfig(settings)
+  } else {
+    err=json.Unmarshal(content, &settings)
+    if err!=nil{
+        fmt.Print("Error:",err)
+    }
   }
   return settings
 }
