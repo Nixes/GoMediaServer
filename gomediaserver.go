@@ -7,6 +7,7 @@ import (
   "strings"
   "io/ioutil"
   "encoding/json"
+  "path/filepath"
   "fmt"
 )
 
@@ -50,20 +51,39 @@ func LoadConfig () Settings {
   return settings
 }
 
-func FolderScan (path string) {
-
+func FolderScan (path string,extensions []string) {
+  new_pathlist := []string;
+  // first we get a list of everything in the directory
+  contents_array, err := ioutil.ReadDir(path);
+  if err != nil {
+      //panic(err)
+      fmt.Print("Error:",err)
+  } else {
+    for contents_array_index := range contents_array {
+      for extension_index := range extensions {
+        match_found := false;
+        if filepath.Ext(contents_array[contents_array_index].Name()) == extensions[extension_index] {
+          match_found = true;
+        }
+        if match_found {
+            // add to new list
+        }
+      }
+    }
+  }
 }
 
 func ImageBrowseHandler (w http.ResponseWriter, r *http.Request) {
   fmt.Printf("Image page requested.\n")
 }
 
+// this function is a bit shit, there has to be a better more idiomatic way
 func FolderBrowseHandler (w http.ResponseWriter, r *http.Request) {
   fmt.Printf("File Browsing page requested.\n")
   full_path := r.URL.Path[1:];
   real_path := strings.TrimPrefix(full_path, "files/");
   final_path := config.FileFolder + real_path;
-  // should do some check on folder to make sure it can't break out of permitted folder
+  // TODO: should do some check on folder to make sure it can't break out of permitted folder
   fmt.Printf("Full path requested:"+final_path)
   // do some check to see if it points to a file or a folder
   if (strings.HasSuffix(final_path,"/")) {
