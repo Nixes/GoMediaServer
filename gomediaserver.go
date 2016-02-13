@@ -62,15 +62,21 @@ func FolderBrowseHandler (w http.ResponseWriter, r *http.Request) {
   fmt.Printf("File Browsing page requested.\n")
   full_path := r.URL.Path[1:];
   real_path := strings.TrimPrefix(full_path, "files/");
-
-  //fmt.Fprintf(w, real_path)
-  contents_array, err := ioutil.ReadDir(config.FileFolder + real_path);
-  if err != nil {
-      //panic(err)
-      fmt.Fprintf(w, err.Error())
+  final_path := config.FileFolder + real_path;
+  // do some check to see if it points to a file or a folder
+  if (strings.HasSuffix(final_path,"/")) {
+    fmt.Printf("Requested folder listing\n")
+    contents_array, err := ioutil.ReadDir(final_path);
+    if err != nil {
+        //panic(err)
+        fmt.Fprintf(w, err.Error())
+    } else {
+      t := template.Must(template.ParseFiles("templates/filebrowse.html","templates/header.html","templates/footer.html") )  // Parse template file.
+      t.Execute(w, contents_array) // note the limitation whereby only one object may be sent to the template
+    }
   } else {
-    t := template.Must(template.ParseFiles("templates/filebrowse.html","templates/header.html","templates/footer.html") )  // Parse template file.
-    t.Execute(w, contents_array) // note the limitation whereby only one object may be sent to the template
+    fmt.Printf("Requested file\n")
+    http.ServeFile(w, r, final_path)
   }
 }
 
