@@ -63,6 +63,8 @@ func FolderBrowseHandler (w http.ResponseWriter, r *http.Request) {
   full_path := r.URL.Path[1:];
   real_path := strings.TrimPrefix(full_path, "files/");
   final_path := config.FileFolder + real_path;
+  // should do some check on folder to make sure it can't break out of permitted folder
+  fmt.Printf("Full path requested:"+final_path)
   // do some check to see if it points to a file or a folder
   if (strings.HasSuffix(final_path,"/")) {
     fmt.Printf("Requested folder listing\n")
