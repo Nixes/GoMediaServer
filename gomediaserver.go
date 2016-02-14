@@ -9,6 +9,7 @@ import (
   "encoding/json"
   "path/filepath"
   "fmt"
+  "os"
 )
 
 type Settings struct {
@@ -51,26 +52,29 @@ func LoadConfig () Settings {
   return settings
 }
 
-func FolderScan (path string,extensions []string) {
-  new_pathlist := []string;
+// prioritise peformance over memory usage
+func FolderScan (path string,extensions []string) []os.FileInfo {
+  new_pathlist := make([]os.FileInfo,0,0); // the 0 is length, the 256 is capacity that can be filled before a resize is required
   // first we get a list of everything in the directory
   contents_array, err := ioutil.ReadDir(path);
   if err != nil {
       //panic(err)
       fmt.Print("Error:",err)
   } else {
+    new_pathlist = make([]os.FileInfo,0, len(contents_array) ); // the 0 is length, the 256 is capacity that can be filled before a resize is required
     for contents_array_index := range contents_array {
+      match_found := false;
       for extension_index := range extensions {
-        match_found := false;
         if filepath.Ext(contents_array[contents_array_index].Name()) == extensions[extension_index] {
           match_found = true;
         }
-        if match_found {
-            // add to new list
-        }
+      }
+      if match_found {
+        new_pathlist = append(new_pathlist, contents_array[contents_array_index]) // wow this is dumb syntax
       }
     }
   }
+  return new_pathlist
 }
 
 func ImageBrowseHandler (w http.ResponseWriter, r *http.Request) {
@@ -98,7 +102,7 @@ func FolderBrowseHandler (w http.ResponseWriter, r *http.Request) {
     }
   } else {
     fmt.Printf("Requested file\n")
-    http.ServeFile(w, r, final_path)
+    http.ServeFile(w, r, final_path) // consider using http.Dir to fix issues with browsing places that you shouldnt
   }
 }
 
@@ -113,12 +117,13 @@ var config Settings = LoadConfig();
 
 func main() {
 
-  http.HandleFunc("/static/", func(w http.ResponseWriter, r *http.Request) {
+  http.Handle("/static/", http.FileServer(http.Dir("./static")) )
+  /*http.HandleFunc("/static/", func(w http.ResponseWriter, r *http.Request) {
       http.ServeFile(w, r, r.URL.Path[1:])
-  })
+  })*/
   http.HandleFunc("/images", ImageBrowseHandler)
   http.HandleFunc("/files", func(w http.ResponseWriter, r *http.Request) { http.Redirect(w, r, "/files/", 301)} )
-  http.HandleFunc("/files/", FolderBrowseHandler)
+  http.HandleFunc("/files/", FolderBrowseHandler) // might be worth using stripprefix
   http.HandleFunc("/", HomeHandler)
   http.ListenAndServe(":3000", nil)
 }
