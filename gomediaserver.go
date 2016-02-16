@@ -117,10 +117,10 @@ var config Settings = LoadConfig();
 
 func main() {
 
-  http.Handle("/static/", http.FileServer(http.Dir("./static")) )
-  /*http.HandleFunc("/static/", func(w http.ResponseWriter, r *http.Request) {
+  //http.Handle("/static/", http.FileServer(http.Dir("./static")) )
+  http.HandleFunc("/static/", func(w http.ResponseWriter, r *http.Request) {
       http.ServeFile(w, r, r.URL.Path[1:])
-  })*/
+  })
   http.HandleFunc("/images", ImageBrowseHandler)
   http.HandleFunc("/files", func(w http.ResponseWriter, r *http.Request) { http.Redirect(w, r, "/files/", 301)} )
   http.HandleFunc("/files/", FolderBrowseHandler) // might be worth using stripprefix
