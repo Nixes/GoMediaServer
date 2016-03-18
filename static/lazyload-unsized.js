@@ -17,9 +17,10 @@ function loadImage (el) {
 function loadImages() {
   console.log("Loading the next bunch")
   document.getElementById("loading-box").style.display="inline";
+  var no_images_load = 30;
 
   var images = $( ".unloaded" );
-  for (i = 0; i < 20 ; i++) {
+  for (i = 0; i < no_images_load ; i++) {
     loading_images += 1;
     loadImage(images[i])
   }
