@@ -4,14 +4,14 @@
 
           <div class="ui images">
             {{range .}}
-              {{if not .IsDir}}<img class="ui image unloaded" height="200px" data-src="{{.Name}}"></img>{{end}}
+              {{if not .IsDir}}<img class="ui image unloaded" height="200px" data-src="{{.Name}}">{{end}}
             {{end}}
           </div>
 
           <div id="loading-box">
-            </br>
+            <br>
               <div class="ui active inverted text loader">Generating Thumbnails</div>
-            </br>
+            <br>
           </div>
 
 
