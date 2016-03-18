@@ -10,6 +10,10 @@ import (
   "path/filepath"
   "fmt"
   "os"
+  "image"                  // this
+  "image/png"             // this
+  "image/jpeg"             // this
+  "github.com/nfnt/resize" // and this are used for thumbnail generation
 )
 
 type Settings struct {
@@ -77,8 +81,53 @@ func FolderScan (path string,extensions []string) []os.FileInfo {
   return new_pathlist
 }
 
+// this converts pngs and jpgs to smaller jpgs, and writes them out to the http connection
+func generateThumb (w http.ResponseWriter, path string) {
+  file, err := os.Open(path)
+  if err != nil {
+    fmt.Print("Error opening image:",err)
+  }
+  var img image.Image = nil;
+  if filepath.Ext(path) == ".png" {
+    img, err = png.Decode(file)
+    if err != nil {
+        fmt.Print("Error decoding image:",err)
+    }
+    file.Close()
+  } else if filepath.Ext(path) == ".jpg" {
+    img, err = jpeg.Decode(file)
+    if err != nil {
+        fmt.Print("Error decoding image:",err)
+    }
+    file.Close()
+  } else {
+    return
+  }
+  // resize to height 200
+  m := resize.Resize(0, 200, img, resize.Lanczos3)
+  err = jpeg.Encode(w, m, nil)
+  if err != nil {
+    fmt.Print("Error encoding thumb:",err)
+  }
+}
+
 func ImageBrowseHandler (w http.ResponseWriter, r *http.Request) {
-  fmt.Printf("Image page requested.\n")
+  full_path := r.URL.Path[1:];
+  real_path := strings.TrimPrefix(full_path, "images/");
+  final_path := config.ImageFolder + real_path;
+  fmt.Printf("Full IMAGE path requested: "+final_path+"\n")
+  if (strings.HasSuffix(final_path,"/")) {
+    fmt.Printf("Requested image listing\n")
+    // its actually a damn folder
+    scanned_files := FolderScan(final_path, []string{".png",".jpg"} )
+    fmt.Printf("Num images found: ", len(scanned_files) )
+    t := template.Must(template.ParseFiles("templates/imagebrowse.html","templates/header.html","templates/footer.html") )  // Parse template file.
+    t.Execute(w, scanned_files)
+  } else { /* else if (strings.HasSuffix(final_path,"/thumb")) {} */
+    fmt.Printf("Requested file\n")
+    generateThumb(w,final_path);
+    //http.ServeFile(w, r, final_path) // consider using http.Dir to fix issues with browsing places that you shouldnt
+  }
 }
 
 // this function is a bit shit, there has to be a better more idiomatic way
@@ -88,7 +137,7 @@ func FolderBrowseHandler (w http.ResponseWriter, r *http.Request) {
   real_path := strings.TrimPrefix(full_path, "files/");
   final_path := config.FileFolder + real_path;
   // TODO: should do some check on folder to make sure it can't break out of permitted folder
-  fmt.Printf("Full path requested:"+final_path)
+  fmt.Printf("Full path requested: "+final_path+"\n")
   // do some check to see if it points to a file or a folder
   if (strings.HasSuffix(final_path,"/")) {
     fmt.Printf("Requested folder listing\n")
@@ -116,14 +165,14 @@ func HomeHandler (w http.ResponseWriter, r *http.Request) {
 var config Settings = LoadConfig();
 
 func main() {
-
+  fmt.Printf("Go media server running on port 3000.\n")
   //http.Handle("/static/", http.FileServer(http.Dir("./static")) )
   http.HandleFunc("/static/", func(w http.ResponseWriter, r *http.Request) {
       http.ServeFile(w, r, r.URL.Path[1:])
   })
-  http.HandleFunc("/images", ImageBrowseHandler)
+  http.HandleFunc("/images/", ImageBrowseHandler)
   http.HandleFunc("/files", func(w http.ResponseWriter, r *http.Request) { http.Redirect(w, r, "/files/", 301)} )
   http.HandleFunc("/files/", FolderBrowseHandler) // might be worth using stripprefix
-  http.HandleFunc("/", HomeHandler)
+  //http.HandleFunc("/", HomeHandler)
   http.ListenAndServe(":3000", nil)
 }

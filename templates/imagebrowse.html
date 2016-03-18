@@ -1,0 +1,19 @@
+{{template "header"}}
+      <script src="/static/lazyload-unsized.js"></script>
+        <div class="ui segment">
+          <div class="ui images">
+            {{range .}}
+              {{if not .IsDir}}<img class="ui image" height="200px" src="{{.Name}}"></img>{{end}}
+            {{end}}
+        </div>
+
+        <div class="ui segment">
+          <p></p>
+          <div class="ui active dimmer">
+            <div class="ui loader"></div>
+          </div>
+        </div>
+
+      </div>
+  </div>
+{{template "footer"}}
