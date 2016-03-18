@@ -18,6 +18,23 @@
 			.ui.image.unloaded {
 				display:none;
 			}
+			#loading-box {
+				color: white;
+				font-family: sans-serif;
+				background: #333;
+				padding:20px 150px 20px 150px;
+				position: fixed;
+				left:40%;
+				bottom:0;
+			}
+			@keyframes fadeIn {
+			    from {opacity: 0;}
+			    to {opacity: 1;}
+			}
+			.ui.image {
+				animation-name: fadeIn;
+				animation-duration: 1s;
+			}
     </style>
     <script type="text/javascript">
 

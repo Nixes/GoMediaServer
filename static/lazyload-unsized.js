@@ -10,17 +10,25 @@ function loadImage (el) {
       finishLoadingImage(el)
       //fn? fn() : null;
     }
+    img.onerror =  failedLoadingImage;
     img.src = src;
 }
 
 function loadImages() {
   console.log("Loading the next bunch")
-  $( ".dimmer" ).addClass( "active" );
+  document.getElementById("loading-box").style.display="inline";
 
   var images = $( ".unloaded" );
-  for (i = 0; i < 10 ; i++) {
+  for (i = 0; i < 20 ; i++) {
     loading_images += 1;
     loadImage(images[i])
+  }
+}
+
+function failedLoadingImage (el) {
+  loading_images -= 1;
+  if (loading_images < 1) {
+    finishLoadingImages();
   }
 }
 
@@ -34,7 +42,8 @@ function finishLoadingImage (el) {
 }
 
 function finishLoadingImages () {
-  $( ".dimmer" ).removeClass( "active" ); // removes loading placeholder
+
+  document.getElementById("loading-box").style.display="none"; // removes loading placeholder
   console.log("Finished Loading Images");
 }
 
@@ -44,7 +53,7 @@ function checkScroll () {
                        html.clientHeight, html.scrollHeight, html.offsetHeight );
 
 	console.log( "window.pageYOffset: " + window.pageYOffset + " documentHeight " + documentHeight + " window.innerHeight: " + window.innerHeight );
-	if ( window.pageYOffset + window.innerHeight > (documentHeight - 100) ) {
+	if ( window.pageYOffset + window.innerHeight > (documentHeight - 200) ) {
     loadImages();
 	}
 }
