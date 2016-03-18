@@ -119,7 +119,7 @@ func ImageBrowseHandler (w http.ResponseWriter, r *http.Request) {
   if (strings.HasSuffix(final_path,"/")) {
     fmt.Printf("Requested image listing\n")
     // its actually a damn folder
-    scanned_files := FolderScan(final_path, []string{".png",".jpg"} )
+    scanned_files := FolderScan(final_path, []string{ ".png",".jpg" } )
     fmt.Printf("Num images found: ", len(scanned_files) )
     t := template.Must(template.ParseFiles("templates/imagebrowse.html","templates/header.html","templates/footer.html") )  // Parse template file.
     t.Execute(w, scanned_files)
@@ -173,6 +173,6 @@ func main() {
   http.HandleFunc("/images/", ImageBrowseHandler)
   http.HandleFunc("/files", func(w http.ResponseWriter, r *http.Request) { http.Redirect(w, r, "/files/", 301)} )
   http.HandleFunc("/files/", FolderBrowseHandler) // might be worth using stripprefix
-  //http.HandleFunc("/", HomeHandler)
+  http.HandleFunc("/", HomeHandler)
   http.ListenAndServe(":3000", nil)
 }

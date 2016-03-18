@@ -10,7 +10,7 @@ function loadImage (el) {
       finishLoadingImage(el)
       //fn? fn() : null;
     }
-    img.onerror =  failedLoadingImage;
+    img.onerror = failedLoadingImage;
     img.src = src;
 }
 
@@ -27,6 +27,7 @@ function loadImages() {
 }
 
 function failedLoadingImage (el) {
+  el.innerHTML="";
   loading_images -= 1;
   if (loading_images < 1) {
     finishLoadingImages();
@@ -43,7 +44,6 @@ function finishLoadingImage (el) {
 }
 
 function finishLoadingImages () {
-
   document.getElementById("loading-box").style.display="none"; // removes loading placeholder
   console.log("Finished Loading Images");
 }
