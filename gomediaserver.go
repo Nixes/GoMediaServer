@@ -104,7 +104,7 @@ func generateThumb (w http.ResponseWriter, path string) {
     return
   }
   // resize to height 200
-  m := resize.Resize(0, 200, img, resize.Lanczos3)
+  m := resize.Resize(0, 200, img, resize.NearestNeighbor)
   err = jpeg.Encode(w, m, nil)
   if err != nil {
     fmt.Print("Error encoding thumb:",err)
