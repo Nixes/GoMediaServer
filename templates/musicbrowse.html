@@ -1,0 +1,41 @@
+{{template "header"}}
+      <script src="/static/music-player.js"></script>
+        <div class="ui segment">
+
+            {{range .}}
+              {{if not .IsDir}}<img class="ui image unloaded" height="200px" data-src="{{.Name}}">{{end}}
+            {{end}}
+
+          <div id="loading-box">
+            <div id="music-player">
+              <div id="controls">
+                <div class="ui icon buttons">
+                  <button class="ui button"><i class="left arrow icon"></i></button>
+                  <button class="ui button"><i class="pause icon"></i></button>
+                  <button class="ui button"><i class="right arrow icon"></i></button>
+                  <button class="ui button"><i class="shuffle icon"></i></button>
+                  <button class="ui labeled icon button"><i class="plus icon"></i>add</button>
+                  <button class="ui labeled icon button"><i class="remove icon"></i>remove</button>
+                </div>
+              </div>
+              <div id="now-playing">
+                <p>Song: something great</p>
+                <p>Artist: donald bump</p>
+                <p>Album: hell no</p>
+              </div>
+              <div class="clear"></div>
+
+              <div id="ticker">
+                <div class="ui small active green inverted progress">
+                  <div class="bar"></div>
+                </div>
+              </dev>
+
+            </dev>
+
+          </div>
+
+
+      </div>
+  </div>
+{{template "footer"}}

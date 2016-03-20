@@ -81,7 +81,7 @@ func FolderScan (path string,extensions []string) []os.FileInfo {
   return new_pathlist
 }
 
-// this converts pngs and jpgs to smaller jpgs, and writes them out to the http connection
+// this converts pngs and jpgs to smaller jpgs, and writes them out to the http connection, this thing EATS ALL THE MEMORY
 func generateThumb (w http.ResponseWriter, path string) {
   file, err := os.Open(path)
   if err != nil {
@@ -92,12 +92,14 @@ func generateThumb (w http.ResponseWriter, path string) {
     img, err = png.Decode(file)
     if err != nil {
         fmt.Print("Error decoding image:",err)
+        return
     }
     file.Close()
   } else if filepath.Ext(path) == ".jpg" {
     img, err = jpeg.Decode(file)
     if err != nil {
         fmt.Print("Error decoding image:",err)
+        return
     }
     file.Close()
   } else {
@@ -127,7 +129,32 @@ func ImageBrowseHandler (w http.ResponseWriter, r *http.Request) {
     fmt.Printf("Requested file\n")
     generateThumb(w,final_path);
     //http.ServeFile(w, r, final_path) // consider using http.Dir to fix issues with browsing places that you shouldnt
-  }
+    }
+}
+
+// show a list of all songs found
+func SongMusicView () {
+
+}
+
+// show list of albumns
+func AlbumMusicView () {
+
+}
+
+// show list of playlists
+func PlaylistMusicView () {
+
+}
+
+// this function offers various ways to enjoy music with ways to view and sort your music collection
+func MusicBrowseHandler (w http.ResponseWriter, r *http.Request) {
+  fmt.Printf("Music Browsing page requested.\n")
+  scanned_files := FolderScan(config.FileFolder, []string{ ".png",".jpg" } )
+  // TODO: should do some check on folder to make sure it can't break out of permitted folder
+
+  t := template.Must(template.ParseFiles("templates/musicbrowse.html","templates/header.html","templates/footer.html") )  // Parse template file.
+  t.Execute(w, scanned_files)
 }
 
 // this function is a bit shit, there has to be a better more idiomatic way
@@ -157,7 +184,6 @@ func FolderBrowseHandler (w http.ResponseWriter, r *http.Request) {
 
 func HomeHandler (w http.ResponseWriter, r *http.Request) {
   fmt.Printf("Home page requested.\n")
-  //fmt.Fprintf(w, "Hi there, I love %s!")
   t := template.Must(template.ParseFiles("templates/main.html","templates/header.html","templates/footer.html") )  // Parse template file.
   t.Execute(w, nil)
 }
@@ -173,6 +199,7 @@ func main() {
   http.HandleFunc("/images/", ImageBrowseHandler)
   http.HandleFunc("/files", func(w http.ResponseWriter, r *http.Request) { http.Redirect(w, r, "/files/", 301)} )
   http.HandleFunc("/files/", FolderBrowseHandler) // might be worth using stripprefix
+  http.HandleFunc("/music",  MusicBrowseHandler)
   http.HandleFunc("/", HomeHandler)
   http.ListenAndServe(":3000", nil)
 }
