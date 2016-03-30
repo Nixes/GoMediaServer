@@ -2,6 +2,9 @@ package main
 
 // import tells what libraries will be required
 import (
+  "runtime/debug" // used for playing with the gc
+  "time"
+
   "html/template"
   "net/http"
   "strings"
@@ -106,8 +109,7 @@ func generateThumb (w http.ResponseWriter, path string) {
     return
   }
   // resize to height 200
-  m := resize.Resize(0, 200, img, resize.NearestNeighbor)
-  err = jpeg.Encode(w, m, nil)
+  err = jpeg.Encode(w, resize.Resize(0, 200, img, resize.NearestNeighbor), nil)
   if err != nil {
     fmt.Print("Error encoding thumb:",err)
   }
@@ -128,8 +130,14 @@ func ImageBrowseHandler (w http.ResponseWriter, r *http.Request) {
   } else { /* else if (strings.HasSuffix(final_path,"/thumb")) {} */
     fmt.Printf("Requested file\n")
     generateThumb(w,final_path);
-    //http.ServeFile(w, r, final_path) // consider using http.Dir to fix issues with browsing places that you shouldnt
+
+    if time.Now().After(timeSinceMemFreed) { // run a custom little memory freeing loop, required because the thumb generator eats memory too fast for the gc
+        debug.FreeOSMemory()
+        fmt.Printf("<<<<<<< MEMORY FREED >>>>>>>\n")
+        timeSinceMemFreed = time.Now().Add(time.Duration(5*time.Second))
     }
+
+  }
 }
 
 // show a list of all songs found
@@ -189,6 +197,7 @@ func HomeHandler (w http.ResponseWriter, r *http.Request) {
 }
 
 var config Settings = LoadConfig();
+var timeSinceMemFreed time.Time = time.Now().Add(time.Duration(5));
 
 func main() {
   fmt.Printf("Go media server running on port 3000.\n")
