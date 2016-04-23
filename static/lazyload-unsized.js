@@ -46,6 +46,7 @@ function finishLoadingImage (el) {
 function finishLoadingImages () {
   document.getElementById("loading-box").style.display="none"; // removes loading placeholder
   console.log("Finished Loading Images");
+  loading_images_started = false;
 }
 
 function checkScroll () {
@@ -54,11 +55,13 @@ function checkScroll () {
                        html.clientHeight, html.scrollHeight, html.offsetHeight );
 
 	console.log( "window.pageYOffset: " + window.pageYOffset + " documentHeight " + documentHeight + " window.innerHeight: " + window.innerHeight );
-	if ( window.pageYOffset + window.innerHeight > (documentHeight - 200) ) {
+	if ( window.pageYOffset + window.innerHeight > (documentHeight - 200) && !loading_images_started ) {
+    loading_images_started = true
     loadImages();
 	}
 }
 
+var loading_images_started = false;
 var loading_images = 0;
 
 function init () {

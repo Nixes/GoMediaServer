@@ -132,11 +132,10 @@ func ImageBrowseHandler (w http.ResponseWriter, r *http.Request) {
     generateThumb(w,final_path);
 
     if time.Now().After(timeSinceMemFreed) { // run a custom little memory freeing loop, required because the thumb generator eats memory too fast for the gc
-        debug.FreeOSMemory()
-        fmt.Printf("<<<<<<< MEMORY FREED >>>>>>>\n")
-        timeSinceMemFreed = time.Now().Add(time.Duration(5*time.Second))
+      debug.FreeOSMemory()
+      fmt.Printf("<<<<<<< MEMORY FREED >>>>>>>\n")
+      timeSinceMemFreed = time.Now().Add(time.Duration(5*time.Second))
     }
-
   }
 }
 
