@@ -1,4 +1,5 @@
 # gomediaserver
+Uses SemanticUI for the user interface.
 
 Simple web app created to learn golang
 
