@@ -17,6 +17,7 @@ import (
   "image/png"             // this
   "image/jpeg"             // this
   "github.com/nfnt/resize" // and this are used for thumbnail generation
+  "gopkg.in/h2non/bimg.v1" // faster thumbnail generation
 )
 
 type Settings struct {
@@ -85,7 +86,7 @@ func FolderScan (path string,extensions []string) []os.FileInfo {
 }
 
 // this converts pngs and jpgs to smaller jpgs, and writes them out to the http connection, this thing EATS ALL THE MEMORY
-func generateThumb (w http.ResponseWriter, path string) {
+func generateThumbSlow (w http.ResponseWriter, path string) {
   file, err := os.Open(path)
   if err != nil {
     fmt.Print("Error opening image:",err)
@@ -112,6 +113,36 @@ func generateThumb (w http.ResponseWriter, path string) {
   err = jpeg.Encode(w, resize.Resize(0, 200, img, resize.NearestNeighbor), nil)
   if err != nil {
     fmt.Print("Error encoding thumb:",err)
+  }
+}
+
+// this converts pngs and jpgs to smaller jpgs, and writes them out to the http connection, this thing EATS ALL THE MEMORY
+func generateThumb (w http.ResponseWriter, path string) {
+  buffer, err := bimg.Read(path)
+  if err != nil {
+    fmt.Print("Error opening image:",err)
+  }
+  img, err := bimg.NewImage(buffer).Resize(nil,200)
+  if err != nil {
+      fmt.Print("Error decoding/resizing image:",err)
+      return
+  }
+
+  if filepath.Ext(path) == ".png" {
+      img, err := img.Convert(bimg.JPG)
+      if err != nil {
+          fmt.Print("Error converting image:",err)
+          return
+      }
+  } else if filepath.Ext(path) == ".jpg" {
+
+  } else {
+    return
+  }
+  // write converted image to buffer
+  err = w.Write(img.Image())
+  if err != nil {
+    fmt.Print("Error writing thumb to buffer:",err)
   }
 }
 
