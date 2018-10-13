@@ -86,6 +86,11 @@ func FolderScan (path string,extensions []string) []os.FileInfo {
   return new_pathlist
 }
 
+func ReturnErrorResponse(response_writer http.ResponseWriter) {
+    response_writer.WriteHeader(http.StatusInternalServerError)
+    response_writer.Write([]byte("500 - Something bad happened!"))
+}
+
 // this converts pngs and jpgs to smaller jpgs, and writes them out to the http connection, this thing EATS ALL THE MEMORY
 // now also saves the newly generated thumbnail for caching
 func GenerateThumb (response_writer http.ResponseWriter, path string, destination_path string) {
@@ -98,6 +103,7 @@ func GenerateThumb (response_writer http.ResponseWriter, path string, destinatio
     img, err = png.Decode(file)
     if err != nil {
         fmt.Print("Error decoding image:",err)
+        ReturnErrorResponse(response_writer)
         return
     }
     file.Close()
@@ -105,10 +111,12 @@ func GenerateThumb (response_writer http.ResponseWriter, path string, destinatio
     img, err = jpeg.Decode(file)
     if err != nil {
         fmt.Print("Error decoding image:",err)
+        ReturnErrorResponse(response_writer)
         return
     }
     file.Close()
   } else {
+    ReturnErrorResponse(response_writer)
     return
   }
   // prepare file writer for saving thumbnail to disk
