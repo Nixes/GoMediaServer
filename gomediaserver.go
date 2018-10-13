@@ -46,7 +46,7 @@ func SaveConfig (settings Settings) {
 }
 
 func LoadConfig () Settings {
-  var settings Settings = Settings{ FileFolder:"./",ImageFolder:"./",VideoFolder:"./",MusicFolder:"./", ThumbnailCacheFolder:"./thumbcache" }
+  var settings Settings = Settings{ FileFolder:"./",ImageFolder:"./",VideoFolder:"./",MusicFolder:"./", ThumbnailCacheFolder:"./thumbcache/" }
   content, err := ioutil.ReadFile("config.json")
   if err!=nil{
       fmt.Print("Error:",err)
