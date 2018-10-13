@@ -50,3 +50,6 @@ config.json
 config.json
 config.json
 config.json
+
+# gomediaserver cache folders
+thumbcache/
