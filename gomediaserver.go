@@ -14,7 +14,8 @@ import (
   "fmt"
   "os"
   "image"                  // this
-  "image/png"             // this
+  _ "image/gif"             // this
+  _ "image/png"             // this
   "image/jpeg"             // this
   "github.com/nfnt/resize" // and this are used for thumbnail generation
   "io" // used for multiwriter
@@ -99,18 +100,12 @@ func GenerateThumb (response_writer http.ResponseWriter, path string, destinatio
     fmt.Print("Error opening image:",err)
   }
   var img image.Image = nil;
-  if filepath.Ext(path) == ".png" {
-    img, err = png.Decode(file)
+  var detected_format string ="";
+  if filepath.Ext(path) == ".png" || filepath.Ext(path) == ".jpg" || filepath.Ext(path) == ".jpeg"  || filepath.Ext(path) == ".gif" {
+    img, detected_format, err = image.Decode(file)
+    fmt.Printf("Format: "+detected_format+"\n")
     if err != nil {
-        fmt.Print("Error decoding image:",err)
-        ReturnErrorResponse(response_writer)
-        return
-    }
-    file.Close()
-  } else if filepath.Ext(path) == ".jpg" {
-    img, err = jpeg.Decode(file)
-    if err != nil {
-        fmt.Print("Error decoding image:",err)
+        fmt.Print("Error decoding image:"+path+" :",err,"\n")
         ReturnErrorResponse(response_writer)
         return
     }
@@ -148,10 +143,10 @@ func ReadThumb(w http.ResponseWriter,r *http.Request, image_source string) {
     thumb_path := config.ThumbnailCacheFolder + basefilename+".jpg";
 	// check thumbnail file exists
 	if (!DoesfileExist(thumb_path)) {
-        fmt.Printf("Thumb didn't exist yet, generating\n")
+        //fmt.Printf("Thumb didn't exist yet, generating\n")
         GenerateThumb(w,image_source,thumb_path);
     } else {
-        fmt.Printf("Thumb already exists sending\n")
+        //fmt.Printf("Thumb already exists sending\n")
         http.ServeFile(w, r, thumb_path)
     }
 }
@@ -160,16 +155,16 @@ func ImageBrowseHandler (w http.ResponseWriter, r *http.Request) {
   full_path := r.URL.Path[1:];
   real_path := strings.TrimPrefix(full_path, "images/");
   final_path := config.ImageFolder + real_path;
-  fmt.Printf("Full IMAGE path requested: "+final_path+"\n")
+  //fmt.Printf("Full IMAGE path requested: "+final_path+"\n")
   if (strings.HasSuffix(final_path,"/")) {
-    fmt.Printf("Requested image listing\n")
+    //fmt.Printf("Requested image listing\n")
     // its actually a damn folder
     scanned_files := FolderScan(final_path, []string{ ".png",".jpg" } )
     fmt.Printf("Num images found: ", len(scanned_files) )
     t := template.Must(template.ParseFiles("templates/imagebrowse.html","templates/header.html","templates/footer.html") )  // Parse template file.
     t.Execute(w, scanned_files)
   } else { /* else if (strings.HasSuffix(final_path,"/thumb")) {} */
-    fmt.Printf("Requested file\n");
+    //fmt.Printf("Requested file\n");
 	ReadThumb(w,r,final_path)
 
     if time.Now().After(timeSinceMemFreed) { // run a custom little memory freeing loop, required because the thumb generator eats memory too fast for the gc
