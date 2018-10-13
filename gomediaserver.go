@@ -159,20 +159,27 @@ func ImageBrowseHandler (w http.ResponseWriter, r *http.Request) {
   if (strings.HasSuffix(final_path,"/")) {
     //fmt.Printf("Requested image listing\n")
     // its actually a damn folder
-    scanned_files := FolderScan(final_path, []string{ ".png",".jpg" } )
+    scanned_files := FolderScan(final_path, []string{ ".png",".jpg",".jpeg", ".gif" } )
     fmt.Printf("Num images found: ", len(scanned_files) )
     t := template.Must(template.ParseFiles("templates/imagebrowse.html","templates/header.html","templates/footer.html") )  // Parse template file.
     t.Execute(w, scanned_files)
-  } else { /* else if (strings.HasSuffix(final_path,"/thumb")) {} */
-    //fmt.Printf("Requested file\n");
-	ReadThumb(w,r,final_path)
+  } else {
+      fmt.Printf("Requested file\n")
+      http.ServeFile(w, r, final_path) // consider using http.Dir to fix issues with browsing places that you shouldnt
+  }
+}
+
+func ImageThumbHandler(w http.ResponseWriter, r *http.Request) {
+    full_path := r.URL.Path[1:];
+    real_path := strings.TrimPrefix(full_path, "thumb-images/");
+    final_path := config.ImageFolder + real_path;
+    ReadThumb(w,r,final_path)
 
     if time.Now().After(timeSinceMemFreed) { // run a custom little memory freeing loop, required because the thumb generator eats memory too fast for the gc
-      debug.FreeOSMemory()
-      fmt.Printf("<<<<<<< MEMORY FREED >>>>>>>\n")
-      timeSinceMemFreed = time.Now().Add(time.Duration(5*time.Second))
+        debug.FreeOSMemory()
+        fmt.Printf("<<<<<<< MEMORY FREED >>>>>>>\n")
+        timeSinceMemFreed = time.Now().Add(time.Duration(5*time.Second))
     }
-  }
 }
 
 // show a list of all songs found
@@ -241,6 +248,7 @@ func main() {
       http.ServeFile(w, r, r.URL.Path[1:])
   })
   http.HandleFunc("/images/", ImageBrowseHandler)
+  http.HandleFunc("/thumb-images/", ImageThumbHandler)
   http.HandleFunc("/files", func(w http.ResponseWriter, r *http.Request) { http.Redirect(w, r, "/files/", 301)} )
   http.HandleFunc("/files/", FolderBrowseHandler) // might be worth using stripprefix
   http.HandleFunc("/music",  MusicBrowseHandler)

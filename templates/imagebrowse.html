@@ -4,7 +4,7 @@
 
           <div class="ui images">
             {{range .}}
-              {{if not .IsDir}}<img class="ui image unloaded" height="200px" data-src="{{.Name}}">{{end}}
+              {{if not .IsDir}}<img class="ui image unloaded" height="200px" data-src="/thumb-images/{{.Name}}">{{end}}
             {{end}}
           </div>
 
