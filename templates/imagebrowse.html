@@ -1,20 +1,42 @@
 {{template "header"}}
-      <script src="/static/lazyload-unsized.js"></script>
-        <div class="ui segment">
+    <script>
+        function imageClicked() {
+            var image_source = event.target.getAttribute('data-rawsrc');
+            //$('#model-image').attr("src",image_source);
+            var native_el = $('#model-image')[0];
+            native_el.onload = function() {
+                console.log("Modal image download finished, showing");
+                $('.modal').modal('show');
+            }
+            native_el.src = image_source;
+        }
+    </script>
+    <script src="/static/lazyload-unsized.js"></script>
+    <div class="ui large modal">
+        <i class="close icon"></i>
+        <div class="header">Fullscreen View</div>
+        <div class="image content">
+            <img class="image" id="model-image">
+            <div class="description">
+                <p></p>
+            </div>
+        </div>
+    </div>
+    <div class="ui segment">
 
-          <div class="ui images">
+        <div class="ui images">
             {{range .}}
-              {{if not .IsDir}}<img class="ui image unloaded" height="200px" data-src="/thumb-images/{{.Name}}">{{end}}
+            {{if not .IsDir}}<img class="ui image unloaded" height="200px" data-src="/thumb-images/{{.Name}}" data-rawsrc="{{.Name}}" onclick="imageClicked()">{{end}}
             {{end}}
-          </div>
+        </div>
 
-          <div id="loading-box">
+        <div id="loading-box">
             <br>
-              <div class="ui active inverted text loader">Generating Thumbnails</div>
+            <div class="ui active inverted text loader">Generating Thumbnails</div>
             <br>
-          </div>
+        </div>
 
 
-      </div>
-  </div>
+    </div>
+</div>
 {{template "footer"}}
