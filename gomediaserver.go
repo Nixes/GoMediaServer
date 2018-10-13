@@ -17,6 +17,7 @@ import (
   "image/png"             // this
   "image/jpeg"             // this
   "github.com/nfnt/resize" // and this are used for thumbnail generation
+  "io" // used for multiwriter
 )
 
 type Settings struct {
@@ -24,6 +25,7 @@ type Settings struct {
     ImageFolder string
     VideoFolder string
     MusicFolder string
+	ThumbnailCacheFolder string
 }
 
 type Page struct {
@@ -44,7 +46,7 @@ func SaveConfig (settings Settings) {
 }
 
 func LoadConfig () Settings {
-  var settings Settings = Settings{ FileFolder:"./",ImageFolder:"./",VideoFolder:"./",MusicFolder:"./" }
+  var settings Settings = Settings{ FileFolder:"./",ImageFolder:"./",VideoFolder:"./",MusicFolder:"./", ThumbnailCacheFolder:"./thumbcache" }
   content, err := ioutil.ReadFile("config.json")
   if err!=nil{
       fmt.Print("Error:",err)
@@ -85,7 +87,8 @@ func FolderScan (path string,extensions []string) []os.FileInfo {
 }
 
 // this converts pngs and jpgs to smaller jpgs, and writes them out to the http connection, this thing EATS ALL THE MEMORY
-func generateThumb (w http.ResponseWriter, path string) {
+// now also saves the newly generated thumbnail for caching
+func GenerateThumb (response_writer http.ResponseWriter, path string, destination_path string) {
   file, err := os.Open(path)
   if err != nil {
     fmt.Print("Error opening image:",err)
@@ -108,11 +111,41 @@ func generateThumb (w http.ResponseWriter, path string) {
   } else {
     return
   }
+  // prepare file writer for saving thumbnail to disk
+  thumb_file_writer, err := os.Create(destination_path)
+  if err != nil {
+      panic(err)
+  }
+
+  // write to multiwriter so we can then write it directly to a file and also to the response object
+  // without needing another disk read operation or buffer
+  thumb_multiwriter := io.MultiWriter(response_writer,thumb_file_writer)
   // resize to height 200
-  err = jpeg.Encode(w, resize.Resize(0, 200, img, resize.NearestNeighbor), nil)
+  err = jpeg.Encode(thumb_multiwriter, resize.Resize(0, 200, img, resize.NearestNeighbor), nil)
   if err != nil {
     fmt.Print("Error encoding thumb:",err)
   }
+}
+
+func DoesfileExist(f string) bool {
+    _, err := os.Stat(f)
+    if os.IsNotExist(err) {
+        return false
+    }
+    return err == nil
+}
+
+func ReadThumb(w http.ResponseWriter,r *http.Request, image_source string) {
+    var basefilename = filepath.Base(image_source)
+    thumb_path := config.ThumbnailCacheFolder + basefilename+".jpg";
+	// check thumbnail file exists
+	if (!DoesfileExist(thumb_path)) {
+        fmt.Printf("Thumb didn't exist yet, generating\n")
+        GenerateThumb(w,image_source,thumb_path);
+    } else {
+        fmt.Printf("Thumb already exists sending\n")
+        http.ServeFile(w, r, thumb_path)
+    }
 }
 
 func ImageBrowseHandler (w http.ResponseWriter, r *http.Request) {
@@ -128,8 +161,8 @@ func ImageBrowseHandler (w http.ResponseWriter, r *http.Request) {
     t := template.Must(template.ParseFiles("templates/imagebrowse.html","templates/header.html","templates/footer.html") )  // Parse template file.
     t.Execute(w, scanned_files)
   } else { /* else if (strings.HasSuffix(final_path,"/thumb")) {} */
-    fmt.Printf("Requested file\n")
-    generateThumb(w,final_path);
+    fmt.Printf("Requested file\n");
+	ReadThumb(w,r,final_path)
 
     if time.Now().After(timeSinceMemFreed) { // run a custom little memory freeing loop, required because the thumb generator eats memory too fast for the gc
       debug.FreeOSMemory()
