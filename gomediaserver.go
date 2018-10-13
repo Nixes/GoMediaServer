@@ -121,7 +121,7 @@ func GenerateThumb (response_writer http.ResponseWriter, path string, destinatio
   // without needing another disk read operation or buffer
   thumb_multiwriter := io.MultiWriter(response_writer,thumb_file_writer)
   // resize to height 200
-  err = jpeg.Encode(thumb_multiwriter, resize.Resize(0, 200, img, resize.NearestNeighbor), nil)
+  err = jpeg.Encode(thumb_multiwriter, resize.Resize(0, 200, img, resize.Lanczos3), nil)
   if err != nil {
     fmt.Print("Error encoding thumb:",err)
   }
